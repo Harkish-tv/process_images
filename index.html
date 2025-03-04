@@ -111,6 +111,43 @@
         .upload-box:hover {
             border-color: #4299e1;
         }
+
+            /* Add this new notification style */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease-out;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .notification.show {
+            display: flex;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #38a169;
+        }
+
+        .notification.error {
+            background: #e53e3e;
+        }
+
+        .notification-icon {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -145,59 +182,83 @@
         </form>
 
         <div id="status" class="status-message"></div>
+
+        <div id="notification" class="notification">
+            <span class="notification-icon">✅</span>
+            <span class="notification-text"></span>
+        </div>
     </div>
 
     <script>
         const form = document.getElementById('uploadForm');
-        const statusDiv = document.getElementById('status');
         const imageInput = document.getElementById('imageInput');
-
+        const notification = document.getElementById('notification');
+    
         // Show selected file name
         imageInput.addEventListener('change', (e) => {
             const fileName = e.target.files[0]?.name || 'No file selected';
             document.querySelector('.upload-box label').innerHTML = 
                 `📄 ${fileName}<br><small>Click to change file</small>`;
         });
-
+    
+        // Notification function
+        function showNotification(message, type = 'success') {
+            notification.className = `notification ${type}`;
+            notification.querySelector('.notification-text').textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const style = document.getElementById('style').value;
             const file = imageInput.files[0];
-            
+    
+            // Basic validation
+            if (!username) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+    
+            if (!file) {
+                showNotification('Please select an image', 'error');
+                return;
+            }
+    
             const formData = new FormData();
             formData.append('file', file);
             formData.append('username', username);
             formData.append('style', style);
-
+    
             try {
-                statusDiv.style.display = 'none';
-                statusDiv.classList.remove('success', 'error');
-
+                // Clear any existing notifications
+                notification.classList.remove('show');
+    
                 const response = await fetch('https://precise-fish-merely.ngrok-free.app/process', {
                     method: 'POST',
                     body: formData
                 });
-
+    
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.error || 'Upload failed');
                 }
-
+    
                 // Show success message
-                statusDiv.classList.add('success');
-                statusDiv.innerHTML = '✅ Image uploaded successfully!';
-                statusDiv.style.display = 'block';
-
+                showNotification('Image uploaded successfully! 🎉');
+    
                 // Reset form
                 form.reset();
-                document.querySelector('.upload-box label').innerHTML = '📤 Click to Upload Image';
-
+                document.querySelector('.upload-box label').innerHTML = 
+                    '📤 Click to Upload Image';
+    
             } catch (error) {
-                statusDiv.classList.add('error');
-                statusDiv.innerHTML = `❌ Error: ${error.message}`;
-                statusDiv.style.display = 'block';
+                showNotification(`Error: ${error.message}`, 'error');
                 console.error('Error:', error);
             }
         });
