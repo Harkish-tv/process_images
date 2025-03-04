@@ -1,0 +1,83 @@
+<!-- index.html (Hosted on GitHub Pages) -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Art Style Converter</title>
+    <style>
+        /* Add your styling here */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        #preview { max-width: 100%; display: none; }
+        #downloadBtn { display: none; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Convert Your Image</h1>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label>Style:</label>
+                <select id="style" required>
+                    <option value="">Choose a style</option>
+                    <option value="ondine">Ondine</option>
+                    <option value="scribbles">Scribbles</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Upload Image:</label>
+                <input type="file" id="imageInput" accept="image/*" required>
+            </div>
+            <button type="submit">Convert</button>
+        </form>
+        
+        <img id="preview" alt="Processed preview">
+        <button id="downloadBtn">Download PNG</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const preview = document.getElementById('preview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const status = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const style = document.getElementById('style').value;
+            const file = document.getElementById('imageInput').files[0];
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('username', username);
+            formData.append('style', style);
+
+            // ... existing code ...
+            try {
+                status.textContent = 'Processing...';
+                // Correct endpoint from '/upload' to '/process'
+                const response = await fetch('https://precise-fish-merely.ngrok-free.app/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Processing failed');
+
+                // Use ngrok URL for processed image
+                preview.src = `https://precise-fish-merely.ngrok-free.app${data.processed_url}`;
+                preview.style.display = 'block';
+                
+                // ... rest of the code ...
+            } catch (error) {
+                // ... error handling ...
+            }
+        });
+    </script>
+</body>
+</html>
