@@ -208,6 +208,18 @@
             document.querySelector('.upload-box label').innerHTML = 
                 `📄 ${fileName}<br><small>Click to change file</small>`;
         });
+
+        // Helper to get query param
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Autofill username if ?user=someName is passed
+        const presetUsername = getQueryParam('user');
+        if (presetUsername) {
+            document.getElementById('username').value = presetUsername;
+        }
     
         // Notification function
         function showNotification(message, type = 'success') {
