@@ -215,10 +215,15 @@
             return urlParams.get(param);
         }
 
-        // Autofill username if ?user=someName is passed
+        // Autofill and lock username if ?user=... is provided
         const presetUsername = getQueryParam('user');
+        const usernameInput = document.getElementById('username');
+        
         if (presetUsername) {
-            document.getElementById('username').value = presetUsername;
+            usernameInput.value = presetUsername;
+            usernameInput.readOnly = true;
+            usernameInput.style.backgroundColor = '#edf2f7'; // Optional: subtle gray to show it's locked
+            usernameInput.style.cursor = 'not-allowed';
         }
     
         // Notification function
